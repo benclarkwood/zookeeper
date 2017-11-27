@@ -998,14 +998,14 @@ public class ClientCnxn {
             }
 
             setName(getName().replaceAll("\\(.*\\)",
-                    "(" + addr.getHostName() + ":" + addr.getPort() + ")"));
+                    "(" + addr.getHostString() + ":" + addr.getPort() + ")"));
             if (ZooKeeperSaslClient.isEnabled()) {
                 try {
                     String principalUserName = System.getProperty(
                             ZK_SASL_CLIENT_USERNAME, "zookeeper");
                     zooKeeperSaslClient =
                         new ZooKeeperSaslClient(
-                                principalUserName+"/"+addr.getHostName());
+                                principalUserName+"/"+addr.getHostString());
                 } catch (LoginException e) {
                     // An authentication error occurred when the SASL client tried to initialize:
                     // for Kerberos this means that the client failed to authenticate with the KDC.
@@ -1199,7 +1199,7 @@ public class ClientCnxn {
             Socket sock = null;
             BufferedReader br = null;
             try {
-                sock = new Socket(addr.getHostName(), addr.getPort());
+                sock = new Socket(addr.getHostString(), addr.getPort());
                 sock.setSoLinger(false, -1);
                 sock.setSoTimeout(1000);
                 sock.setTcpNoDelay(true);
@@ -1238,7 +1238,7 @@ public class ClientCnxn {
                 // connection attempt
                 rwServerAddress = addr;
                 throw new RWServerFoundException("Majority server found at "
-                        + addr.getHostName() + ":" + addr.getPort());
+                        + addr.getHostString() + ":" + addr.getPort());
             }
         }
 

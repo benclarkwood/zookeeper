@@ -59,7 +59,7 @@ public final class StaticHostProvider implements HostProvider {
         for (InetSocketAddress address : serverAddresses) {
             InetAddress ia = address.getAddress();
             InetAddress resolvedAddresses[] = InetAddress.getAllByName((ia!=null) ? ia.getHostAddress():
-                address.getHostName());
+                address.getHostString());
             for (InetAddress resolvedAddress : resolvedAddresses) {
                 // If hostName is null but the address is not, we can tell that
                 // the hostName is an literal IP address. Then we can set the host string as the hostname
@@ -67,7 +67,7 @@ public final class StaticHostProvider implements HostProvider {
                 // As far as i know, the only way to check if the hostName is null is use toString().
                 // Both the two implementations of InetAddress are final class, so we can trust the return value of
                 // the toString() method.
-                if (resolvedAddress.toString().startsWith("/") 
+                if (resolvedAddress.toString().startsWith("/")
                         && resolvedAddress.getAddress() != null) {
                     this.serverAddresses.add(
                             new InetSocketAddress(InetAddress.getByAddress(
@@ -75,7 +75,8 @@ public final class StaticHostProvider implements HostProvider {
                                     resolvedAddress.getAddress()), 
                                     address.getPort()));
                 } else {
-                    this.serverAddresses.add(new InetSocketAddress(resolvedAddress.getHostAddress(), address.getPort()));
+                    InetAddress tmpAddr = InetAddress.getByAddress(address.getHostString(), resolvedAddress.getAddress());
+                    this.serverAddresses.add(new InetSocketAddress(tmpAddr, address.getPort()));
                 }  
             }
         }
