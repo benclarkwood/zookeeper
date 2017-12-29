@@ -32,7 +32,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Most simple HostProvider, resolves only on instantiation.
- * 
+ *
  */
 public final class StaticHostProvider implements HostProvider {
     private static final Logger LOG = LoggerFactory
@@ -47,7 +47,7 @@ public final class StaticHostProvider implements HostProvider {
 
     /**
      * Constructs a SimpleHostSet.
-     * 
+     *
      * @param serverAddresses
      *            possibly unresolved ZooKeeper server addresses
      * @throws UnknownHostException
@@ -70,17 +70,23 @@ public final class StaticHostProvider implements HostProvider {
                 if (resolvedAddress.toString().startsWith("/")
                         && resolvedAddress.getAddress() != null) {
                     this.serverAddresses.add(
-                            new InetSocketAddress(InetAddress.getByAddress(
+                            new InetSocketAddress(
+                                InetAddress.getByAddress(
                                     address.getHostName(),
-                                    resolvedAddress.getAddress()), 
-                                    address.getPort()));
+                                    resolvedAddress.getAddress()),
+                                address.getPort()));
                 } else {
                     InetAddress tmpAddr = InetAddress.getByAddress(address.getHostString(), resolvedAddress.getAddress());
-                    this.serverAddresses.add(new InetSocketAddress(tmpAddr, address.getPort()));
-                }  
+                    this.serverAddresses.add(
+                        new InetSocketAddress(
+                            InetAddress.getByAddress(
+                                address.getHostString(),
+                                resolvedAddress.getAddress()),
+                            address.getPort()));
+                }
             }
         }
-        
+
         if (this.serverAddresses.isEmpty()) {
             throw new IllegalArgumentException(
                     "A HostProvider may not be empty!");
