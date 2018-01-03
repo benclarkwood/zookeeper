@@ -124,9 +124,11 @@ public class StaticHostProviderTest extends ZKTestCase {
         // check that first next results in no re-resolution
         hostProvider.next(0);
         assertEquals(0, hostProvider.getAddedAddresses());
+        assertEquals(0, hostProvider.getRemovedAddresses());
         // check that second next _does_ result in re-resolution
         hostProvider.next(0);
         assertEquals(1, hostProvider.getAddedAddresses());
+        assertEquals(1, hostProvider.getRemovedAddresses());
     }
 
     @Test
@@ -143,11 +145,13 @@ public class StaticHostProviderTest extends ZKTestCase {
         // check that first next results in no re-resolution
         hostProvider.next(0);
         assertEquals(0, hostProvider.getAddedAddresses());
+        assertEquals(0, hostProvider.getRemovedAddresses());
         // Call onConnected
         hostProvider.onConnected();
         // check that second next results in no re-resolution
         hostProvider.next(0);
         assertEquals(0, hostProvider.getAddedAddresses());
+        assertEquals(0, hostProvider.getRemovedAddresses());
     }
 
     @Test
@@ -164,9 +168,11 @@ public class StaticHostProviderTest extends ZKTestCase {
         // check that first next results in no re-resolution
         hostProvider.next(0);
         assertEquals(0, hostProvider.getAddedAddresses());
+        assertEquals(0, hostProvider.getRemovedAddresses());
         // check that second next _does_ result in re-resolution
         hostProvider.next(0);
         assertTrue(hostProvider.getAddedAddresses() > 0);
+        assertEquals(1, hostProvider.getRemovedAddresses());
     }
 
     private StaticHostProvider getHostProviderUnresolved(byte size)

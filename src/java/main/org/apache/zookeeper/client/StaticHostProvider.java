@@ -100,23 +100,19 @@ public final class StaticHostProvider implements HostProvider {
             // Re-resolve the address
             try {
                 List<InetSocketAddress> reresolvedAddresses = resolveAddress(curAddress);
+                LOG.info("Adding newly resolved addresses: {}", reresolvedAddresses.toString());
 
-                if (reresolvedAddresses.size() == 1) {
-                    serverAddresses.set(currentIndex, reresolvedAddresses.get(0));
-                    addedAddresses++;
-                    removedAddresses++;
-                } else {
-                    serverAddresses.remove(currentIndex);
-                    removedAddresses++;
-                    for (InetSocketAddress resolvedAddress : reresolvedAddresses) {
-                        if (!serverAddresses.contains(resolvedAddress)) {
-                            serverAddresses.add(resolvedAddress);
-                            addedAddresses++;
-                        }
+                serverAddresses.set(currentIndex, reresolvedAddresses.get(0));
+                addedAddresses++;
+                removedAddresses++;
+
+                for (InetSocketAddress resolvedAddress :
+                    reresolvedAddresses.subList(1, reresolvedAddresses.size())) {
+                    if (!serverAddresses.contains(resolvedAddress)) {
+                        serverAddresses.add(resolvedAddress);
+                        addedAddresses++;
                     }
                 }
-
-                LOG.info("Added newly resolved addresses: {}", reresolvedAddresses.toString());
             } catch (UnknownHostException e) {
                 LOG.warn("Cannot re-resolve server: {}", curAddress, e);
             }
@@ -144,6 +140,10 @@ public final class StaticHostProvider implements HostProvider {
     }
 
     private List<InetSocketAddress> resolveAddress(InetSocketAddress address) throws UnknownHostException {
+        if (address == null) {
+            throw new UnknownHostException("null");
+        }
+
         InetAddress resolvedAddresses[] = InetAddress.getAllByName(address.getHostString());
 
         List<InetSocketAddress> addresses = new ArrayList<InetSocketAddress>();
