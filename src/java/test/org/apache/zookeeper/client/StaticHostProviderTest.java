@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.zookeeper.test;
+package org.apache.zookeeper.client;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotSame;
@@ -40,7 +40,7 @@ import java.util.Random;
 
 public class StaticHostProviderTest extends ZKTestCase {
     private static final Logger LOG = LoggerFactory.getLogger(StaticHostProviderTest.class);
-    
+
     @Test
     public void testNextGoesRound() throws UnknownHostException {
         HostProvider hostProvider = getHostProvider((byte) 2);
@@ -110,6 +110,65 @@ public class StaticHostProviderTest extends ZKTestCase {
         }
     }
 
+    @Test
+    public void testReresolutionAfterNoConnection() throws Exception {
+        byte size = 1;
+        ArrayList<InetSocketAddress> addresses = new ArrayList<InetSocketAddress>(size);
+
+        addresses.add(InetSocketAddress.createUnresolved("issues.apache.org", 1234));
+        addresses.add(InetSocketAddress.createUnresolved("wiki.apache.org", 1234));
+
+        StaticHostProvider hostProvider = new StaticHostProvider(addresses);
+        assertEquals(2, hostProvider.size());
+
+        // check that first next results in no re-resolution
+        hostProvider.next(0);
+        assertEquals(0, hostProvider.getAddedAddresses());
+        // check that second next _does_ result in re-resolution
+        hostProvider.next(0);
+        assertEquals(1, hostProvider.getAddedAddresses());
+    }
+
+    @Test
+    public void testNoReresolutionAfterConnection() throws Exception {
+        byte size = 1;
+        ArrayList<InetSocketAddress> addresses = new ArrayList<InetSocketAddress>(size);
+
+        addresses.add(InetSocketAddress.createUnresolved("issues.apache.org", 1234));
+        addresses.add(InetSocketAddress.createUnresolved("wiki.apache.org", 1234));
+
+        StaticHostProvider hostProvider = new StaticHostProvider(addresses);
+        assertEquals(2, hostProvider.size());
+
+        // check that first next results in no re-resolution
+        hostProvider.next(0);
+        assertEquals(0, hostProvider.getAddedAddresses());
+        // Call onConnected
+        hostProvider.onConnected();
+        // check that second next results in no re-resolution
+        hostProvider.next(0);
+        assertEquals(0, hostProvider.getAddedAddresses());
+    }
+
+    @Test
+    public void testReresolutionMultiAddress() throws Exception {
+        byte size = 1;
+        ArrayList<InetSocketAddress> addresses = new ArrayList<InetSocketAddress>(size);
+
+        addresses.add(InetSocketAddress.createUnresolved("issues.apache.org", 1234));
+        addresses.add(InetSocketAddress.createUnresolved("apache.org", 1234));
+
+        StaticHostProvider hostProvider = new StaticHostProvider(addresses);
+        assertEquals(3, hostProvider.size());
+
+        // check that first next results in no re-resolution
+        hostProvider.next(0);
+        assertEquals(0, hostProvider.getAddedAddresses());
+        // check that second next _does_ result in re-resolution
+        hostProvider.next(0);
+        assertTrue(hostProvider.getAddedAddresses() > 0);
+    }
+
     private StaticHostProvider getHostProviderUnresolved(byte size)
             throws UnknownHostException {
         return new StaticHostProvider(getUnresolvedServerAddresses(size));
@@ -123,7 +182,7 @@ public class StaticHostProviderTest extends ZKTestCase {
         }
         return list;
     }
-    
+
     private StaticHostProvider getHostProvider(byte size)
             throws UnknownHostException {
         ArrayList<InetSocketAddress> list = new ArrayList<InetSocketAddress>(
